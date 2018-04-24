@@ -13,9 +13,6 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-
-
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -44,14 +41,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 //Database connection
 app.use((req, res, next) => {
  res.locals.connection = mysql.createConnection({
-   host: 'localhost',
+   host: '127.0.0.1',
    user: 'root',
    password: '',
-   database: 'recordbook'
+   database: 'acc'
  });
 
  res.locals.connection.connect();
  next();
+});
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  next();
 });
 
 app.use('/', indexRouter);

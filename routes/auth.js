@@ -15,20 +15,21 @@ router.post('/login', (req, res) => {
     res.locals.connection.query('SELECT * from users where username = ?', [username], function (error, results, fields) {
         if(!error) {
             console.log(results);
-            const hashedPassword = results[0].password;
+            const hashedPassword = results[0]['password'];
             const verified = passwordHash.verify(password, hashedPassword);
             if(verified) {
                 const user = {
                     id: results[0]['id'],
-                    username: results[0]['name']
+                    name: results[0]['name'],
+                    username: results[0]['username']
                 }
                 jwt.sign({user}, 'secretsuper', { expiresIn: '600s' }, (err, token) => {
                     if(err) throw err;
-                    res.send(JSON.stringify({ "status": 200, "error": null, "response": token}))
+                    res.send(JSON.stringify({ "status": 200, "error": null, "response": "ok", "token": token}))
                 });
                 
             } else {
-                res.send(JSON.stringify({ "status": 200, "error": null, "response": false}))
+                res.send(JSON.stringify({ "status": 200, "error": "Invalid Credentials. Please Try Again.", "response": null}))
             }
         } else {
             res.send(JSON.stringify({ "status": 500, "error": error, "response": null}));
@@ -48,13 +49,13 @@ router.post('/register', (req, res) => {
     res.locals.connection.query('SELECT id FROM users where username = ?', [user.username], (error, rows, fileds) => {
         if(!error) {
             if(rows.length >= 1) {
-                res.send(JSON.stringify({"status": 200, "error": null, "response": "Username already exists."}));
+                res.send(JSON.stringify({"status": 200, "error": "Username already exists.", "response": null}));
             } else {
                 res.locals.connection.query('INSERT INTO users SET ?', user, (error, rows, fileds) => {
                     if(error) {
                         res.send(JSON.stringify({ "status": 500, "error": error, "response": null}));
                     } else {
-                        res.send(JSON.stringify({"status": 200, "error": null, "response": "Username created successfully."}));
+                        res.send(JSON.stringify({"status": 200, "error": null, "response": "ok"}));
                     }
                 });
             }
