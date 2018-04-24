@@ -8,6 +8,7 @@ var fs = require('fs');
 var rfs = require('rotating-file-stream')
 
 var indexRouter = require('./routes/index');
+var authRouter = require('./routes/auth');
 var usersRouter = require('./routes/users');
 
 var app = express();
@@ -46,7 +47,7 @@ app.use((req, res, next) => {
    host: 'localhost',
    user: 'root',
    password: '',
-   database: 'acc'
+   database: 'recordbook'
  });
 
  res.locals.connection.connect();
@@ -54,6 +55,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/', indexRouter);
+app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
