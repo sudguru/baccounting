@@ -5,13 +5,14 @@ var jwt = require('jsonwebtoken');
 
 
 router.get('/', verifyToken, function(req, res, next) {
-  jwt.verify(req.token, 'secret', (err, authData) => {
+  jwt.verify(req.token, 'secretsuper', (err, authData) => {
     if(err) {
       res.sendStatus(403);
     } else {
+        console.log('xx');
         res.locals.connection.query('SELECT * from users', function (error, results, fields) {
     		if (error) throw error;
-    		res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+    		res.json({status: 200, error: null, data: results});
     	});
     }
   })

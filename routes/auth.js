@@ -9,37 +9,42 @@ var passwordHash = require('password-hash');
 // console.log(passwordHash.verify('Password0', hashedPassword)); 
 
 router.post('/login', (req, res) => {
+    //console.log(req.body);
     const username = req.body.username;
     const password = req.body.password;
 
     res.locals.connection.query('SELECT * from users where username = ?', [username], function (error, results, fields) {
         if(!error) {
-            console.log(results);
-            const hashedPassword = results[0]['password'];
+            //console.log(results);
+            let hashedPassword = '';
+            if(results.length == 1) {
+                hashedPassword = results[0]['password'];
+            }
             const verified = passwordHash.verify(password, hashedPassword);
             if(verified) {
                 const user = {
                     id: results[0]['id'],
                     name: results[0]['name'],
-                    username: results[0]['username']
+                    username: results[0]['username'],
+                    roles: results[0]['roles']
                 }
                 jwt.sign({user}, 'secretsuper', { expiresIn: '600s' }, (err, token) => {
                     if(err) throw err;
-                    res.send(JSON.stringify({ "status": 200, "error": null, "response": "ok", "token": token}))
+                    res.send(JSON.stringify({ status: 200, error: null, response: "ok", token: token}))
                 });
                 
             } else {
-                res.send(JSON.stringify({ "status": 200, "error": "Invalid Credentials. Please Try Again.", "response": null}))
+                res.send(JSON.stringify({ status: 200, error: "Invalid Credentials. Please Try Again.", response: null}))
             }
         } else {
-            res.send(JSON.stringify({ "status": 500, "error": error, "response": null}));
+            res.send(JSON.stringify({ status: 500, error: error, response: null}));
         }
     });
 });
 
 
 router.post('/register', (req, res) => {
-    console.log(req.body);
+    //console.log(req.body);
     const user = {
         username: req.body.username,
         password: passwordHash.generate(req.body.password),
@@ -49,18 +54,18 @@ router.post('/register', (req, res) => {
     res.locals.connection.query('SELECT id FROM users where username = ?', [user.username], (error, rows, fileds) => {
         if(!error) {
             if(rows.length >= 1) {
-                res.send(JSON.stringify({"status": 200, "error": "Username already exists.", "response": null}));
+                res.send(JSON.stringify({status: 200, error: "Username already exists.", response: null}));
             } else {
                 res.locals.connection.query('INSERT INTO users SET ?', user, (error, rows, fileds) => {
                     if(error) {
-                        res.send(JSON.stringify({ "status": 500, "error": error, "response": null}));
+                        res.send(JSON.stringify({ status: 500, error: error, response: null}));
                     } else {
-                        res.send(JSON.stringify({"status": 200, "error": null, "response": "ok"}));
+                        res.send(JSON.stringify({"status": 200, error: null, response: "ok"}));
                     }
                 });
             }
         } else {
-            res.send(JSON.stringify({ "status": 500, "error": error, "response": null}));
+            res.send(JSON.stringify({ status: 500, error: error, response: null}));
         }
     });
     
@@ -71,21 +76,7 @@ router.get('/', verifyToken, function(req, res) {
     res.sendStatus(403);
 });
 
-// router.get('/', verifyToken, function(req, res, next) {
 
-//       jwt.verify(req.token, 'secretsuper', (err, authData) => {
-//         if(err) {
-//           res.sendStatus(403);
-//         } else {
-//             res.locals.connection.query('SELECT * from blueprint', function (error, results, fields) {
-//         		if (error) throw error;
-//         		res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-//         	});
-//         }
-//       })
-// });
-
-//verify verifyToken
 function verifyToken(req, res, next) {
   // get auth header
   const bearerHeader = req.headers['authorization'];

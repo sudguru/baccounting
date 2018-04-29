@@ -44,7 +44,7 @@ app.use((req, res, next) => {
    host: '127.0.0.1',
    user: 'root',
    password: '',
-   database: 'acc'
+   database: 'recordbook'
  });
 
  res.locals.connection.connect();
